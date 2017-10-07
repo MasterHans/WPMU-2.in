@@ -41,6 +41,11 @@
 !.gitignore
 !proc.php
 !oop.php
+!inherit.php
+!overwrite.php
+!preserving.php
+!static.php
+!visibility.php
 
 # track .editorconfig file (i.e. do NOT ignore it)
 !.editorconfig
