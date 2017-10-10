@@ -1,0 +1,11 @@
+.msf-form {
+    display:flex;
+}
+
+.msf-success {
+    background: #ABFFAC;
+    color: #60C661;
+    text-align: center;
+    width:100%;
+    padding:22px;
+}
