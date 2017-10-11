@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: My Subscription Form
+Plugin Name: OOP Subscription Form
 Plugin URI: http://danielpataki.com
 Description: An OOP based project for WPMU DEV
 Author: Daniel Pataki
@@ -15,9 +15,8 @@ Version: 1.0.0
  * return $fields;
  * }
  */
-
-
 $config = array(
+    'provider' => 'mailchimp',
     'providers' => array(
         'mailchimp' => array(
             'api_key' => 'cd64539dd19283cdcc637f2ccddcd45-us6'
@@ -32,15 +31,16 @@ $config = array(
 class MySubscriptionForm
 {
     var $providers;
+    var $provider;
 
-    function __constructor($config)
+    function __construct($config)
     {
         $this->providers = $config['providers'];
-
+        $this->provider = $config['provider'];
         add_filter('the_content', [$this, 'form']);
         add_action('wp_enqueue_scripts', [$this, 'assets']);
-        add_action('wp_ajax_msf_form_submit', [$this, 'form_submit']);
-        add_action('wp_ajax_nopriv_msf_form_submit', [$this, 'form_submit']);
+        add_action('wp_ajax_msf_form_submit', [$this, 'submissionHandler']);
+        add_action('wp_ajax_nopriv_msf_form_submit', [$this, 'submissionHandler']);
     }
 
     function form($content)
@@ -88,7 +88,7 @@ class MySubscriptionForm
     }
 
 
-    function submissionHandler()
+    function mailchimpHandler()
     {
 
         if (empty($_POST['name']) || !isset($_POST['msf_nonce']) || !wp_verify_nonce($_POST['msf_nonce'], 'msf_form_submit')
@@ -98,7 +98,7 @@ class MySubscriptionForm
 
         wp_remote_post('https://us6.api.mailchimp.com/3.0/lists/bbcd6546db/members', array(
             'headers' => array(
-                'Authorization' => 'Basic ' . base64_encode('mywebsite' . ':' . 'cd64539dd19283cdcc637f2ccddcd45-us6'),
+                'Authorization' => 'Basic ' . base64_encode('mywebsite' . ':' . $this->providers['mailchimp']['api_key']),
                 'Content-Type' => 'application/json'
             ),
             'body' => json_encode(array(
@@ -111,6 +111,16 @@ class MySubscriptionForm
         wp_redirect($url);
         wp_die();
 
+    }
+
+    function submissionHandler() {
+
+        if( method_exists($this, $this->provider . 'Handler' ) ) {
+            call_user_func( array( $this, $this->provider . 'Handler' ) );
+        }
+        else {
+            echo $this->provider . 'Handler does not exist' ;
+        }
     }
 
 }
